@@ -10,6 +10,7 @@ import co.elastic.logstash.api.PluginConfigSpec;
 import org.apache.commons.lang3.StringUtils;
 import quickfix.ConfigError;
 import quickfix.DataDictionary;
+import quickfix.FieldType;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -42,12 +43,44 @@ public class JavaFixProtocol implements Filter {
                 List<Integer> unknownFields = new ArrayList<>();
                 for (String split : splits) {
                     String[] kv = split.split("=");
-                    int field = Integer.parseInt(kv[0]);
-                    if (fieldList.contains(field)) {
-                        e.setField(dataDictionary.getFieldName(field), kv[1]);
-                    } else {
-                        unknownFields.add(field);
-                        e.setField(kv[0], kv[1]);
+                    if (kv.length == 2) {
+                        int field = Integer.parseInt(kv[0]);
+                        Object value;
+                        FieldType fieldType = dataDictionary.getFieldType(field);
+
+                        if (dataDictionary.isGroup(kv[1], field)) {
+                            // TODO fix group deal
+//                            DataDictionary.GroupInfo group = dataDictionary.getGroup(kv[1], field);
+//                            int[] orderedFields = group.getDataDictionary().getOrderedFields();
+
+                        } else if (dataDictionary.isField(field)) {
+                            switch (fieldType) {
+                                case INT:
+                                case DAYOFMONTH:
+                                    value = Integer.valueOf(kv[1]);
+                                    break;
+                                case PRICE:
+                                case FLOAT:
+                                case QTY:
+                                    value = Double.valueOf(kv[1]);
+                                    break;
+                                case BOOLEAN:
+                                    value = "Y".equals(kv[1]);
+                                    break;
+                                case UNKNOWN:
+                                    unknownFields.add(field);
+                                    value = kv[1];
+                                    break;
+                                default:
+                                    if (StringUtils.isBlank(dataDictionary.getValueName(field, kv[1]))) {
+                                        value = kv[1];
+                                    } else {
+                                        value = dataDictionary.getValueName(field, kv[1]);
+                                    }
+                                    break;
+                            }
+                            e.setField(dataDictionary.getFieldName(field), value);
+                        }
                     }
                 }
                 if (unknownFields.size() > 0) {
