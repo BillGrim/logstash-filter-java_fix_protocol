@@ -40,7 +40,7 @@ public class JavaFixProtocol implements Filter {
                 Object f = e.getField(sourceField);
                 if (f instanceof String) {
                     List<Integer> fieldList = Arrays.stream(dataDictionary.getOrderedFields()).boxed().collect(Collectors.toList());
-                    String[] splits = ((String) f).split("\001");
+                    String[] splits = ((String) f).split("\\u0001");
                     List<Integer> unknownFields = new ArrayList<>();
                     for (String split : splits) {
                         String[] kv = split.split("=");

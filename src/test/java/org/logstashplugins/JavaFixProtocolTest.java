@@ -31,11 +31,13 @@ public class JavaFixProtocolTest {
 
         Event e = new org.logstash.Event();
         TestMatchListener matchListener = new TestMatchListener();
-        e.setField(sourceField, "8=FIX.4.2\0019=184\00135=F\00134=2\00149=ANOTHER_INC\00150=DefaultSenderSubID\00152=20150826-23:08:38.094\00156=DUMMY_INC\0011=DefaultAccount\00111=clordid_of_cancel\00141=151012569\00154=1\00155=ITER\00160=20250407-13:14:15\001167=FUT\001200=201512\00110=147\001");
+//        e.setField(sourceField, "8=FIX.4.2\0019=184\00135=F\00134=2\00149=ANOTHER_INC\00150=DefaultSenderSubID\00152=20150826-23:08:38.094\00156=DUMMY_INC\0011=DefaultAccount\00111=clordid_of_cancel\00141=151012569\00154=1\00155=ITER\00160=20250407-13:14:15\001167=FUT\001200=201512\00110=147\001");
+        e.setField(sourceField, "8=FIX.4.219=52\u000135=0\u000134=7\u000149=VIP051\u000152=20210628-09:17:16.257\u000156=BVT\u000110=083\u0001");
         Collection<Event> results = filter.filter(Collections.singletonList(e), matchListener);
+        System.out.println(results);
 
         Assert.assertEquals(1, results.size());
-        Assert.assertEquals("ITER", results.toArray(new Event[1])[0].getField("Symbol"));
+        Assert.assertEquals("Heartbeat", results.toArray(new Event[1])[0].getField("MsgType"));
         Assert.assertEquals(1, matchListener.getMatchCount());
     }
 }
